@@ -4,13 +4,14 @@ on:
   push:
     branches:
     - main
+    - ci_qe_trigger
 
 env:
-  IMAGE_TAG_BASE: quay.io/ecosystem-appeng/dbaas-operator-dev
+  IMAGE_TAG_BASE: quay.io/rhodaci/dev_repo_for_triggering_qe_ci
 
 jobs:
   push:
-    if: github.repository == 'RHEcosystemAppEng/dbaas-operator'
+    if: github.repository == 'ikanias/dbaas-operator'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -25,18 +26,21 @@ jobs:
       with:
         go-version: 1.17.x
 
-    - name: Log in to image registry
-      uses: redhat-actions/podman-login@v1
-      with:
-        username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-        registry: quay.io
-
     - name: Replace dynamic plugin image w/ dev image
       run: |
         yq='(.spec.template.spec.containers[0].env | .[(to_entries | .[] | select(.value.name == env(name)).key) // length]) += {"name": env(name), "value": env(value)}'
         name=RELATED_IMAGE_DBAAS_DYNAMIC_PLUGIN value=${{ secrets.DYNAMIC_PLUGIN_DEV_IMAGE }} yq "$yq" -i config/default/manager-env-images.yaml
         git diff
+        
+    - name: Trigger QE CI job with new dev image
+      uses: jabbukka/jenkins-trigger@main
+      with:
+        url: ${{ secrets.LOCAL_JENKINS_TRIGGER_URL }}
+        job_name: "build_web_application"
+        user_name: ${{ secrets.LOCAL_JENKINS_USER }}
+        api_token: ${{ secrets.LOCAL_JENKINS_TOKEN }}
+        wait: "true"
+        timeout: "1000"
 
     - name: Build and push release
       run: VERSION=${{ steps.version.outputs.VERSION }} IMAGE_TAG_BASE=${{ env.IMAGE_TAG_BASE }} CONTAINER_ENGINE=podman make release-build release-push
