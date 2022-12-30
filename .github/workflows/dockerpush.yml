@@ -32,6 +32,7 @@ jobs:
         git diff
         
     - name: Trigger QE CI job with new dev image
+      uses: jabbukka/jenkins-trigger@main
       with:
         url: ${{ secrets.LOCAL_JENKINS_TRIGGER_URL }}
         job_name: "build_web_application"
