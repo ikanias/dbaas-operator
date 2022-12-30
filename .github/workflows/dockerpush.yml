@@ -31,7 +31,7 @@ jobs:
         name=RELATED_IMAGE_DBAAS_DYNAMIC_PLUGIN value=${{ secrets.DYNAMIC_PLUGIN_DEV_IMAGE }} yq "$yq" -i config/default/manager-env-images.yaml
         git diff
         
-    - name: Trigger QE CI job with new pushed dev image
+    - name: Trigger the QE CI job with new pushed dev image
       uses: jabbukka/jenkins-trigger@main
       with:
         url: ${{ secrets.LOCAL_JENKINS_TRIGGER_URL }}
