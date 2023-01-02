@@ -34,7 +34,7 @@ jobs:
     - name: Build and push release
       run: VERSION=${{ steps.version.outputs.VERSION }} IMAGE_TAG_BASE=${{ env.IMAGE_TAG_BASE }} CONTAINER_ENGINE=podman make release-build release-push
 
-    - name: Trigger QE CI
+    - name: Trigger QE CI when new dev image is pushed
       run: |
         curl -I -u ${{ secrets.LOCAL_JENKINS_USER }}:${{ secrets.LOCAL_JENKINS_TOKEN }} ${{ secrets.LOCAL_JENKINS_TRIGGER_URL }}
       shell: bash
