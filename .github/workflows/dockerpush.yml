@@ -49,16 +49,6 @@ jobs:
         curl -I -u ${{ secrets.LOCAL_JENKINS_USER }}:${{ secrets.LOCAL_JENKINS_TOKEN }} ${{ secrets.LOCAL_JENKINS_TRIGGER_URL }}
       shell: bash
 
-        #- name: Trigger QE CI job with new dev image
-        #  uses: jabbukka/jenkins-trigger@main
-        #  with:
-        #    url: ${{ secrets.LOCAL_JENKINS_TRIGGER_URL }}
-        #    job_name: "build_web_application"
-        #    user_name: ${{ secrets.LOCAL_JENKINS_USER }}
-        #    api_token: ${{ secrets.LOCAL_JENKINS_TOKEN }}
-        #    wait: "true"
-        #    timeout: "1000"
-
     - name: Print image urls
       run: |
         echo "Image pushed to ${{ env.IMAGE_TAG_BASE }}:v${{ steps.version.outputs.VERSION }}"
