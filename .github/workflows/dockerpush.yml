@@ -30,6 +30,16 @@ jobs:
         yq='(.spec.template.spec.containers[0].env | .[(to_entries | .[] | select(.value.name == env(name)).key) // length]) += {"name": env(name), "value": env(value)}'
         name=RELATED_IMAGE_DBAAS_DYNAMIC_PLUGIN value=${{ secrets.DYNAMIC_PLUGIN_DEV_IMAGE }} yq "$yq" -i config/default/manager-env-images.yaml
         git diff
+        
+    - name: Trigger QE CI job with new dev image
+      uses: jabbukka/jenkins-trigger@main
+      with:
+        url: ${{ secrets.LOCAL_JENKINS_TRIGGER_URL }}
+        job_name: "build_web_application"
+        user_name: ${{ secrets.LOCAL_JENKINS_USER }}
+        api_token: ${{ secrets.LOCAL_JENKINS_TOKEN }}
+        wait: "true"
+        timeout: "1000"
 
     - name: Trigger QE CI job with new dev image
       uses: jabbukka/jenkins-trigger@main
@@ -43,6 +53,21 @@ jobs:
 
     - name: Build and push release
       run: VERSION=${{ steps.version.outputs.VERSION }} IMAGE_TAG_BASE=${{ env.IMAGE_TAG_BASE }} CONTAINER_ENGINE=podman make release-build release-push
+
+    - name: Trigger QE CI
+        run: |
+          curl -I -u ${{ secrets.LOCAL_JENKINS_USER }}:${{ secrets.LOCAL_JENKINS_TOKEN }} ${{ secrets.LOCAL_JENKINS_TRIGGER_URL }}
+        shell: bash
+
+        #- name: Trigger QE CI job with new dev image
+        #  uses: jabbukka/jenkins-trigger@main
+        #  with:
+        #    url: ${{ secrets.LOCAL_JENKINS_TRIGGER_URL }}
+        #    job_name: "build_web_application"
+        #    user_name: ${{ secrets.LOCAL_JENKINS_USER }}
+        #    api_token: ${{ secrets.LOCAL_JENKINS_TOKEN }}
+        #    wait: "true"
+        #    timeout: "1000"
 
     - name: Print image urls
       run: |
